@@ -23,7 +23,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../packages/calculation-fixtures/fixtures.json"
+    "../backend/test/fixtures.json"
   ],
   "exclude": ["node_modules", "out"]
 }

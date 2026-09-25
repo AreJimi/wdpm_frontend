@@ -5,7 +5,7 @@ import {
   CalcError,
   type FeeRuleParams,
 } from './engine';
-import fixtures from '../../../../packages/calculation-fixtures/fixtures.json';
+import fixtures from '../../../../backend/test/fixtures.json';
 
 interface FixtureRule {
   id: string;

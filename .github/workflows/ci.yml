@@ -1,0 +1,34 @@
+# Frontend CI — wdpm.ir
+# A PR fails when web calculation/component tests fail, type checks fail,
+# or the static export breaks. Runs only when frontend/ changes.
+
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['frontend/**']
+  pull_request:
+    paths: ['frontend/**']
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Calculation + component tests
+        run: npm test
+      - name: Static production build (must not require a server)
+        run: npm run build
+      - name: Verify static export exists
+        run: test -f out/index.html && test -f out/admin/index.html

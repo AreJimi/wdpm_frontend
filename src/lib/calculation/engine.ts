@@ -1,7 +1,7 @@
 /**
  * wdpm.ir web calculation engine — mirrors backend/src/calculation/engine.ts
  * and is verified against the same shared fixtures
- * (packages/calculation-fixtures/fixtures.json).
+ * (backend/test/fixtures.json).
  *
  * All amounts are integer Rial. Percent math uses basis points to avoid
  * floating-point drift.
