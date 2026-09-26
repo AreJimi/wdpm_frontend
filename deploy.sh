@@ -38,7 +38,7 @@
 # Environment variables (all optional):
 #   APP_DIR        repo location                     (default: /opt/wdpm)
 #   DOMAIN         domain for nginx/SSL              (default: wdpm.ir)
-#   WEB_ROOT       static web root                   (default: /var/www/wdpm.org)
+#   WEB_ROOT       static web root                   (default: /var/www/wdpm.ir)
 #   API_BASE_URL   baked-in NEXT_PUBLIC_API_BASE_URL (default: https://$DOMAIN/api/v1)
 #   API_PORT       backend port for nginx proxy      (default: 3000)
 #   EMAIL          certbot registration email
@@ -51,7 +51,7 @@ set -euo pipefail
 
 # ————— defaults (used by --defaults or as fallbacks) —————
 DEF_DOMAIN="${DOMAIN:-wdpm.ir}"
-DEF_WEB_ROOT="${WEB_ROOT:-/var/www/wdpm.org}"
+DEF_WEB_ROOT="${WEB_ROOT:-/var/www/wdpm.ir}"
 DEF_API_BASE_URL="${API_BASE_URL:-}"
 DEF_API_PORT="${API_PORT:-3000}"
 DEF_EMAIL="${EMAIL:-}"
@@ -153,9 +153,17 @@ require_root
 check_deps
 
 # ————— locate the frontend —————
+# The script lives in frontend/, so trust its own location first.
+# APP_DIR is honored only when it really contains the frontend —
+# a stale/empty $APP_DIR/frontend must not hijack the deploy.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-FRONTEND_DIR="${APP_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}/frontend"
-[[ -d "$FRONTEND_DIR" ]] || die "frontend directory not found: $FRONTEND_DIR (set APP_DIR)"
+if [[ -n "${APP_DIR:-}" && -f "$APP_DIR/frontend/package.json" ]]; then
+  FRONTEND_DIR="$APP_DIR/frontend"
+else
+  FRONTEND_DIR="$SCRIPT_DIR"
+fi
+[[ -f "$FRONTEND_DIR/package.json" ]] \
+  || die "package.json not found in $FRONTEND_DIR — run this script from frontend/ (or set APP_DIR to the repo root)."
 cd "$FRONTEND_DIR"
 
 # ————— banner —————
@@ -182,7 +190,8 @@ fi
 RELOAD_NGINX="$(ask_yn "Reload nginx after configuration?" "$DEF_RELOAD_NGINX")"
 
 # ————— sanity —————
-[[ -f package.json && -f next.config.ts ]] || die "Run this script from the frontend/ directory."
+[[ -f package.json && -f next.config.ts ]] \
+  || die "package.json/next.config.ts not found in $(pwd) — run this script from frontend/ (or set APP_DIR to the repo root)."
 
 say ""
 say "Plan:"
